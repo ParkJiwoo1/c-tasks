@@ -52,7 +52,10 @@ static int chardev_init(void)
 		printk(KERN_ERR  "alloc_chrdev_region = %d\n", alloc_ret);
 		return -1;
 	}
-	/*Get the major number value in dev*/
+	/*Get the major number value in dev
+	 *major number for define what kind of device
+	 *minor for specefic like port number
+	 */
 	chardev_major = MAJOR(dev);
 	dev = MKDEV(chardev_major, MINOR_BASE);
 
