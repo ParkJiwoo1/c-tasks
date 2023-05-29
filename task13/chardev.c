@@ -74,7 +74,9 @@ static int chardev_init(void)
 		unregister_chrdev_region(dev, MINOR_NUM);
 		return -1;
 	}
-	/*create structure pointer to use when call device create*/
+	/*create structure pointer to use when call device create
+	*include name, owner module, class property
+	*/
 	chardev_class = class_create(THIS_MODULE, "chardev");
 	if (IS_ERR(chardev_class)) {
 		printk(KERN_ERR  "class_create\n");
@@ -84,7 +86,9 @@ static int chardev_init(void)
 		unregister_chrdev_region(dev, MINOR_NUM);
 		return -1;
 	}
-	/*create device file in this system)*/
+	/*create device file belongs to class in this system
+	*
+	*/
 	device_create(chardev_class, NULL, MKDEV(chardev_major, minor), NULL, "chardev%d", minor);
 	return 0;
 }
