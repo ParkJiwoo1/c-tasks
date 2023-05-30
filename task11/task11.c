@@ -125,14 +125,6 @@ void read_file(linkedlist* list){
 	}
 	while (fgets(line, sizeof(line), file)) {
 		if (strlen(line) > 1) {
-			//	if (line[strlen(line) - 1] == '\n') {
-			//		line[strlen(line) - 1] = '\0';
-			//	}
-
-			//	if (line[strlen(line) - 1] == '\r') {
-			//		line[strlen(line) - 1] = '\0';
-			//	}
-
 			if (line[strlen(line) - 1] == ':') {
 				line[strlen(line) - 1] = '\0';
 			}
