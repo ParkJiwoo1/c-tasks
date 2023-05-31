@@ -3,8 +3,6 @@
 #include <linux/ioctl.h>
   
 struct ioctl_info{
-       //unsigned long size;
-       //char buf[128];
        int data;
        char command;
 };

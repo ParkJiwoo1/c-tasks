@@ -21,19 +21,32 @@ static unsigned int chardev_major;
 static struct cdev chardev_cdev;
 static struct class *chardev_class = NULL;
 
-static int     chardev_open(struct inode *, struct file *);
+static struct ioctl_info info;
+struct list_node *new_node;
+struct list_node *current_node, *next_node;
+int data_to_delete;
+static struct ioctl_info del_info;
+
+/*static int     chardev_open(struct inode *, struct file *);
 static int     chardev_release(struct inode *, struct file *);
 static ssize_t chardev_read(struct file *, char *, size_t, loff_t *);
 static ssize_t chardev_write(struct file *, const char *, size_t, loff_t *);
-static long chardev_ioctl(struct file *, unsigned int, unsigned long);
+*/static long chardev_ioctl(struct file *, unsigned int, unsigned long);
 
 struct file_operations s_chardev_fops = {
-	.open    = chardev_open,
+/*	.open    = chardev_open,
 	.release = chardev_release,
 	.read    = chardev_read,
 	.write   = chardev_write,
-	.unlocked_ioctl = chardev_ioctl,
+*/	.unlocked_ioctl = chardev_ioctl,
 };
+
+struct list_node {
+    int data;
+    struct list_head list;
+};
+
+LIST_HEAD(my_list);
 
 static int chardev_init(void)
 {
@@ -106,13 +119,12 @@ static void chardev_exit(void)
 	cdev_del(&chardev_cdev);
 	unregister_chrdev_region(dev, MINOR_NUM);
 }
-
+/*
 static int chardev_open(struct inode *inode, struct file *file)
 {
 	printk("The chardev_open() function has been called.");
 	return 0;
 }
-/*close device*/
 static int chardev_release(struct inode *inode, struct file *file)
 {
 	printk("The chardev_close() function has been called.");
@@ -130,9 +142,7 @@ static ssize_t chardev_read(struct file *filp, char __user *buf, size_t count, l
 	printk("The chardev_read() function has been called.");
 	return count;
 }
-
-static struct ioctl_info info;
-
+*/
 /*request to cmd, rest to arg*/
 static long chardev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
@@ -145,13 +155,34 @@ static long chardev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 			if (copy_from_user(&info, (void __user *)arg, sizeof(info))) {
 				return -EFAULT;
 			}
-			printk("info.size : %d, info.buf : %c",info.data, info.command);
+			printk("info.data : %d, info.cmd : %c",info.data, info.command);
+			new_node = kmalloc(sizeof(*new_node), GFP_KERNEL);
+			if (!new_node)
+				return -ENOMEM;
+
+			new_node->data = info.data;
+			INIT_LIST_HEAD(&new_node->list);
+
+			list_add_tail(&new_node->list, &my_list);
 			break;
-		case GET_DATA:
-			printk("GET_DATA\n");
-			/*write user memory block data to kernel memory data block*/
-			if (copy_to_user((void __user *)arg, &info, sizeof(info))) {
+		case DELETE_DATA:
+			printk("DELETE_DATA\n");
+			if (copy_from_user(&del_info, (int __user *)arg, sizeof(del_info))) {
 				return -EFAULT;
+			}
+
+			printk("delete data : %d",del_info.data);
+			list_for_each_entry_safe(current_node, next_node, &my_list, list) {
+				if (current_node->data == del_info.data) {
+					list_del(&current_node->list);
+					kfree(current_node);
+				}
+			}
+			break;
+		case PRINT_DATA:
+			printk("PRINT_DATA\n");
+			list_for_each_entry(current_node, &my_list, list){
+				printk(" [%d] ", current_node->data);
 			}
 			break;
 		default:

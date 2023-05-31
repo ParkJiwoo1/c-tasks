@@ -28,12 +28,9 @@ int main()
 	    }
 	    switch(cmd){
 		    case 'a':
-			    //fgets(data,strlen(data),stdin);
-			    //data[strcspn(data,"\n")]='\0';
 			    printf("\nenter data : ");
 			    scanf("%d",&data);
 			    set_info.command = cmd;
-			    // strncpy(set_info.command,cmd,1);
 			    set_info.data = data;
 
 			    printf("data : %d, cmd : %c\n",set_info.data, set_info.command);
@@ -41,16 +38,20 @@ int main()
 				    printf("Error : SET_DATA.\n");
 			    }
 			    break;
-			    /*case 'd':
-			      if (ioctl(fd, DELETE_DATA, &delete_info) < 0){
-			      printf("Error : DELETE_DATA.\n");
-			      }
-			      break;
-			      case 'p':
-			      if (ioctl(fd, PRINT_DATA, &print_info) < 0){
-			      printf("Error : PRINT_DATA.\n");
-			      }
-			      break;*/
+		    case 'd':
+			    printf("\nenter data : ");
+			    scanf("%d",&data);
+			    delete_info.command = cmd;
+			    delete_info.data = data;
+			    if (ioctl(fd, DELETE_DATA, &delete_info) < 0){
+				    printf("Error : DELETE_DATA.\n");
+			    }
+			    break;
+		    case 'p':
+			    if (ioctl(fd, PRINT_DATA, &print_info) < 0){
+				    printf("Error : PRINT_DATA.\n");
+			    }
+			    break;
 		    case 'q':
 			    exit(0);
 		    default:
