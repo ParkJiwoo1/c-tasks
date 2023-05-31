@@ -11,7 +11,6 @@ int main()
 {
     int fd;
     struct ioctl_info set_info;
-    struct ioctl_info get_info;
     struct ioctl_info delete_info;
     struct ioctl_info print_info;
     char cmd;
@@ -19,7 +18,7 @@ int main()
 
     while(1){
 	    printf("a :add, d:delete, p:print, q:quit");
-	    printf("enter command : ");
+	    printf("\nenter command : ");
 	    scanf(" %c",&cmd);
 	    getchar();
 
@@ -55,21 +54,13 @@ int main()
 			    break;
 		    case 'q':
 			    close(fd);
-			    return 0;
-			    //exit(0);
-			   // break;
+			    exit(0);
 		    default:
 			    break;
 	    }
     }
 
 
-    /*if (ioctl(fd, GET_DATA, &get_info) < 0){
-	    printf("Error : SET_DATA.\n");
-    }
-
-    printf("get_info.data : %d, get_info.command : %c\n", get_info.data, get_info.command);
-*/
     if (close(fd) != 0){
 	    printf("Cannot close.\n");
     }
