@@ -7,7 +7,7 @@ client: client.c
 	$(CC) $(CFLAGS) -o client client.c
 
 server: fork_server.c
-	$(CC) $(CFLAGS) -o server fork_server.c
+	$(CC) $(CFLAGS) -o server fork_server.c linklist.c
 
 clean:
 	rm -f client server
