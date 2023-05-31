@@ -13,8 +13,8 @@
 
 int main(int argc, char** argv){
 	struct sockaddr_in connect_sock;
-	int connectFD, message_len;
-	char sendBuffer[BUFFER_SIZE], receiveBuffer[BUFFER_SIZE];
+	int connect_fd, message_len;
+	char send_buffer[BUFFER_SIZE], receive_buffer[BUFFER_SIZE];
 
 	if (argc != 2) 
 	{
@@ -30,37 +30,35 @@ int main(int argc, char** argv){
 	//host to network short 
 	connect_sock.sin_port = htons(PORT);
 
-	connectFD = socket(AF_INET, SOCK_STREAM, 0);
+	connect_fd = socket(AF_INET, SOCK_STREAM, 0);
 
-	if (connect(connectFD, (struct sockaddr*) &connect_sock, sizeof(connect_sock)) == -1) 
+	if (connect(connect_fd, (struct sockaddr*) &connect_sock, sizeof(connect_sock)) == -1) 
 	{
 		printf("Can not connect.\n");
 		return -1;
 	}
-
 	else 
 	{
 		while (1) 
 		{
 			printf("input message to send to server : ");
 
-			fgets(sendBuffer,BUFF_SIZE,stdin);
+			fgets(send_buffer,BUFF_SIZE,stdin);
 
-			send(connectFD, sendBuffer, strlen(sendBuffer),0);
+			send(connect_fd, send_buffer, strlen(send_buffer),0);
 
-			message_len = recv(connectFD, receiveBuffer, BUFF_SIZE,0);
-			receiveBuffer[message_len] = '\0';//NULL
+			message_len = recv(connect_fd, receive_buffer, BUFF_SIZE,0);
+			receive_buffer[message_len] = '\0';//NULL
 
 			if(message_len>1){
 				printf("echo reply from server : ");
-				fputs(receiveBuffer, stdout);
+				fputs(receive_buffer, stdout);
 			}
-			//fflush(stdout);
 
 		}
 	}
 
-	close(connectFD);
+	close(connect_fd);
 
 	return 0;
 }    
