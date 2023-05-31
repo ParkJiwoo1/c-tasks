@@ -48,7 +48,7 @@ struct list_node {
 
 LIST_HEAD(my_list);
 
-static int chardev_init(void)
+static int __init chardev_init(void)
 {
 	int alloc_ret = 0;
 	int cdev_err = 0;
@@ -106,13 +106,17 @@ static int chardev_init(void)
 	return 0;
 }
 
-static void chardev_exit(void)
+static void __exit chardev_exit(void)
 {
+	struct list_node *current_node, *tmp_node;
 	int minor = 0;
 	dev_t dev = MKDEV(chardev_major, MINOR_BASE);
 
 	printk("The chardev_exit() function has been called.");
-
+	list_for_each_entry_safe(current_node, tmp_node, &my_list, list) {
+		list_del(&current_node->list);
+		kfree(current_node);
+	}
 	device_destroy(chardev_class, MKDEV(chardev_major, minor));
 
 	class_destroy(chardev_class);
@@ -120,29 +124,29 @@ static void chardev_exit(void)
 	unregister_chrdev_region(dev, MINOR_NUM);
 }
 /*
-static int chardev_open(struct inode *inode, struct file *file)
-{
-	printk("The chardev_open() function has been called.");
-	return 0;
-}
-static int chardev_release(struct inode *inode, struct file *file)
-{
-	printk("The chardev_close() function has been called.");
-	return 0;
-}
+   static int chardev_open(struct inode *inode, struct file *file)
+   {
+   printk("The chardev_open() function has been called.");
+   return 0;
+   }
+   static int chardev_release(struct inode *inode, struct file *file)
+   {
+   printk("The chardev_close() function has been called.");
+   return 0;
+   }
 
-static ssize_t chardev_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
-{
-	printk("The chardev_write() function has been called.");  
-	return count;
-}
+   static ssize_t chardev_write(struct file *filp, const char __user *buf, size_t count, loff_t *f_pos)
+   {
+   printk("The chardev_write() function has been called.");  
+   return count;
+   }
 
-static ssize_t chardev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
-{
-	printk("The chardev_read() function has been called.");
-	return count;
-}
-*/
+   static ssize_t chardev_read(struct file *filp, char __user *buf, size_t count, loff_t *f_pos)
+   {
+   printk("The chardev_read() function has been called.");
+   return count;
+   }
+   */
 /*request to cmd, rest to arg*/
 static long chardev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
@@ -187,8 +191,8 @@ static long chardev_ioctl(struct file *filp, unsigned int cmd, unsigned long arg
 			break;
 		default:
 			printk(KERN_WARNING "unsupported command %d\n", cmd);
-
 			return -EFAULT;
+			break;
 	}
 	return 0;
 }

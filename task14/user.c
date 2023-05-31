@@ -25,6 +25,7 @@ int main()
 
 	    if ((fd = open("/dev/chardev0", O_RDWR)) < 0){
 		    printf("Cannot open /dev/chrdev. Try again later.\n");
+		    exit(0);
 	    }
 	    switch(cmd){
 		    case 'a':
@@ -53,19 +54,22 @@ int main()
 			    }
 			    break;
 		    case 'q':
-			    exit(0);
+			    close(fd);
+			    return 0;
+			    //exit(0);
+			   // break;
 		    default:
 			    break;
 	    }
     }
 
 
-    if (ioctl(fd, GET_DATA, &get_info) < 0){
+    /*if (ioctl(fd, GET_DATA, &get_info) < 0){
 	    printf("Error : SET_DATA.\n");
     }
 
     printf("get_info.data : %d, get_info.command : %c\n", get_info.data, get_info.command);
-
+*/
     if (close(fd) != 0){
 	    printf("Cannot close.\n");
     }
