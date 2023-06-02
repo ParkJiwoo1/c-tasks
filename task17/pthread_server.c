@@ -57,8 +57,6 @@ void *handle_client(void *arg)
 int main(){
 	int listenFD, connectFD;
 	struct sockaddr_in listen_sock, connect_sock;
-	//ssize_t receivedBytes;
-	//ssize_t message_len;
 	socklen_t sock_len;
 	pthread_t tid;
 
@@ -88,7 +86,6 @@ int main(){
 
 	while((connectFD = accept(listenFD, (struct sockaddr*)&connect_sock, &sock_len)) >= 0)
 	{
-		//get address of connected socket (socket descriptor, ?buffer, buffer length)
 
 		if (connectFD < 0)
 		{
@@ -101,31 +98,6 @@ int main(){
 			close(connectFD);
 		}	
 		pthread_detach(tid);
-		/*
-		   pid=fork(); //create child process
-		   if(pid==0) //pid of child to parent, 0 to child
-		   {
-		   close(listenFD);
-		   while((message_len = recv(connectFD, readBuff, BUFF_SIZE,0)) >=1)
-		   {                
-
-		   readBuff[message_len] = '\0';//recv always return string +'\0'
-
-		   printf("receive from client %s : ",inet_ntoa(peer_sock.sin_addr));
-		   fputs(readBuff, stdout); //print readBuff
-		   fflush(stdout); //clear buffer
-		   sprintf(sendBuff,"%s",readBuff);//save readBuff at sendBuff
-
-		   send(connectFD, sendBuff, strlen(sendBuff),0);
-		   }
-		   printf("connection end with %s\n",inet_ntoa(peer_sock.sin_addr));
-		   close(connectFD);
-
-		   return 0; 
-
-		   }
-		   else
-		   close(connectFD);*/
 	}
 	close(listenFD);
 	return 0;
