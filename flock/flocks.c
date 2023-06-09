@@ -7,7 +7,7 @@
 #include <signal.h>
 #include <sys/file.h>
 
-#define LOCK_FILE "/home/debian/Desktop/svn_project/programming/flock/flocks" // 잠금 파일 경로
+#define LOCK_FILE "/home/debian/Desktop/svn_project/programming/flock/flocks"
 
 int acquire_lock() {
 	int lock_fd = open(LOCK_FILE, O_RDONLY);
@@ -15,7 +15,9 @@ int acquire_lock() {
 		perror("Unable to open lock file");
 		exit(EXIT_FAILURE);
 	}
-
+	/*LOCK_EX : only one process can get lock(exclusive)
+	 *LOCK_NB : return when locked, not blocking
+	 */
 	if (flock(lock_fd, LOCK_EX | LOCK_NB) == -1) {
 		close(lock_fd);
 		return -1;
