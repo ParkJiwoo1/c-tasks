@@ -75,47 +75,12 @@ struct lib_globals my_mux;
 /**
  * initialize my_mux global value
  */
-	void 
+void 
 init_my_mux (void)
 {
 	my_mux.master = thread_master_create ();
 }
 
-int message_delay_timeout(struct thread *thread)
-{
-
-	if (thread == NULL)
-	{
-		errno = EINVAL;
-		perror("message_delay_timeout");
-		exit(1);
-	}
-
-	printf("[Got message 3 seconds ago]\n");
-
-	return 0;
-}
-
-void schedule_message_delay(struct thread *thread)
-{
-	struct timeval delay;
-
-	if (thread == NULL)
-	{
-		errno = EINVAL;
-		perror("schedule_message_delay");
-		exit(1);
-	}
-
-	delay.tv_sec = 3;
-	delay.tv_usec = 0;
-
-	if (thread_add_timer_timeval(&my_mux, message_delay_timeout, NULL, delay) == NULL)
-	{
-		perror("schedule_message_delay(thread_add_timer_timeval)");
-		exit(1);
-	}
-}
 /**
  * process data from standard input (handler function)
  *
@@ -123,7 +88,7 @@ void schedule_message_delay(struct thread *thread)
  *
  * @return success on 0
  */
-	int
+int
 process_data_from_stdin (struct thread *thread)
 {
 	char buf[INPUT_BUFF_MAX];
@@ -160,14 +125,12 @@ process_data_from_stdin (struct thread *thread)
 			{
 				buf[read_len] = '\0';
 				printf ("%s", buf);
-				break;
 			}
 		}
 		else
 		{
 			buf[read_len - 1] = '\0';
-			printf ("%s", buf);
-
+			printf ("%s\n", buf);
 			break;
 
 
@@ -183,9 +146,8 @@ process_data_from_stdin (struct thread *thread)
 	}
 
 	return 0;
-
+	
 }
-
 
 /**
  * process data from udp socket (handler function)
@@ -194,13 +156,13 @@ process_data_from_stdin (struct thread *thread)
  *
  * @return success on 0
  */
-	int
+int
 process_data_from_udp_sock (struct thread *thread)
 {
 	int recv_len;
 	struct sockaddr_in their_addr;
 	char recv_buf[RECV_BUFF_MAX];
-	socklen_t addr_len;
+	int addr_len;
 
 	if (thread == NULL)
 	{
@@ -208,7 +170,7 @@ process_data_from_udp_sock (struct thread *thread)
 		perror ("process_data_from_dup_sock");
 		exit (1);
 	}
-	addr_len = sizeof(their_addr);
+
 	/* recv from udp socket */
 	recv_len = recvfrom (thread->u.fd, recv_buf, INPUT_BUFF_MAX - 1, 0,
 			(struct sockaddr *)&their_addr, &addr_len);
@@ -221,7 +183,6 @@ process_data_from_udp_sock (struct thread *thread)
 
 	printf ("[form UDP socket] : %s\n", recv_buf);
 
-	schedule_message_delay(thread);
 	/* create thread */
 	if (thread_add_read (&my_mux, 
 				process_data_from_udp_sock, NULL, thread->u.fd) == NULL)
@@ -238,7 +199,7 @@ process_data_from_udp_sock (struct thread *thread)
  *
  * @parma[in] my_sock. indicate information related to socket
  */
-	void
+void
 create_socket (struct my_sock_info *my_sock)
 {
 	int sockfd;
@@ -289,7 +250,7 @@ create_socket (struct my_sock_info *my_sock)
  *
  * @return success on 0
  */
-	int
+int
 greeting_timeout (struct thread *thread)
 {
 	struct timeval g_interval;
@@ -322,7 +283,7 @@ greeting_timeout (struct thread *thread)
  *
  * @param[in] m. thread pointer
  */
-	void
+void
 init_timer_for_greeting_message (struct thread_master *m)
 {
 	struct timeval g_interval;
@@ -346,11 +307,10 @@ init_timer_for_greeting_message (struct thread_master *m)
 
 }
 
-
 /**
  * main function
  */
-	int
+int
 main (int argc, char *argv[])
 {
 	struct my_sock_info my_sock;
@@ -368,7 +328,7 @@ main (int argc, char *argv[])
 		perror ("main(thread_add_read)");
 		exit (1);
 	}
-
+	
 	/* add timer to time slot for greeting message */
 	init_timer_for_greeting_message (my_mux.master);
 
@@ -381,6 +341,6 @@ main (int argc, char *argv[])
 
 	}
 
-
+		
 	return 0;
 }

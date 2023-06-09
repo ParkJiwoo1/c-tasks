@@ -75,8 +75,9 @@ main (int argc, char *argv[])
 	struct servent *se;
 	struct sockaddr_in their_addr;
 	int numbytes;
-	char buf[80] = "UDP socket message!!";
-
+	/*char buf[80] = "UDP socket message!!";*/
+	char buf[80];
+	char recv_buf[80];
 
 	if (argc != 2)
 	{
@@ -103,16 +104,18 @@ main (int argc, char *argv[])
 
 	while (1)
 	{
-		getchar ();
-		if ((numbytes = sendto (sockfd, buf, strlen(buf), 0,
-				(struct sockaddr*)&their_addr, sizeof (struct sockaddr))) == -1)
+		//getchar ();
+		printf("input message to send to server : ");
+		fgets(buf,sizeof(buf),stdin);
+
+		if ((numbytes = sendto (sockfd, buf, strlen(buf), 0,(struct sockaddr*)&their_addr, (int)sizeof(struct sockaddr))) == -1)
 		{
 			perror ("sendto");
 			exit (1);
 		}
-
-		printf ("send %d bytes to %s\n", 
-				numbytes, inet_ntoa (their_addr.sin_addr));
+		//recvfrom(sockfd,recv_buf,sizeof(recv_buf),0,(struct sockaddr*)&their_addr,(int)sizeof(struct sockaddr));
+		//printf ("send %s to %s\n", 
+		//		recv_buf, inet_ntoa (their_addr.sin_addr));
 	}
 	close (sockfd);
 
