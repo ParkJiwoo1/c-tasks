@@ -76,8 +76,10 @@ main (int argc, char *argv[])
 	struct sockaddr_in their_addr;
 	int numbytes;
 	/*char buf[80] = "UDP socket message!!";*/
-	char buf[80];
-	char recv_buf[80];
+	char buf[50];
+	char recv_buf[50];
+	int addr_len1;
+	socklen_t addr_len;
 
 	if (argc != 2)
 	{
@@ -99,23 +101,29 @@ main (int argc, char *argv[])
 
 	their_addr.sin_family = AF_INET;
 	their_addr.sin_port = htons (MY_UDP_PORT);
-	their_addr.sin_addr = *((struct in_addr *)he->h_addr);
+	their_addr.sin_addr.s_addr = inet_addr(argv[1]);
 	memset (&(their_addr.sin_zero), '\0', 8);
-
 	while (1)
 	{
-		//getchar ();
 		printf("input message to send to server : ");
 		fgets(buf,sizeof(buf),stdin);
+		addr_len1 = sizeof(their_addr);
 
-		if ((numbytes = sendto (sockfd, buf, strlen(buf), 0,(struct sockaddr*)&their_addr, (int)sizeof(struct sockaddr))) == -1)
+		if ((numbytes = sendto (sockfd, buf, strlen(buf), 0,(struct sockaddr*)&their_addr, addr_len1)) == -1)
 		{
-			perror ("sendto");
+			perror ("send error");
 			exit (1);
 		}
-		//recvfrom(sockfd,recv_buf,sizeof(recv_buf),0,(struct sockaddr*)&their_addr,(int)sizeof(struct sockaddr));
-		//printf ("send %s to %s\n", 
-		//		recv_buf, inet_ntoa (their_addr.sin_addr));
+		memset(recv_buf, 0, sizeof(recv_buf));
+		addr_len = sizeof(their_addr);
+
+		if (recvfrom(sockfd,recv_buf,50,0,(struct sockaddr*)&their_addr,&addr_len)<0)
+		{
+			perror("recv error");
+			exit(1);	
+		}
+		printf ("reply message :  %s\n", 
+				recv_buf);
 	}
 	close (sockfd);
 

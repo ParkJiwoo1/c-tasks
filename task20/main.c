@@ -58,6 +58,7 @@
 /*=G==========================================================================
  * GLOBAL VARIABLES
  * =========================================================================*/
+int process_data_from_udp_sock (struct thread*);
 
 struct my_sock_info
 {
@@ -67,7 +68,9 @@ struct my_sock_info
 
 struct lib_globals my_mux;
 
+char message[RECV_BUFF_MAX];
 
+struct sockaddr_in their_addr;
 /*=F==========================================================================
  * FUNCTION DEFINITION
  * =========================================================================*/
@@ -91,7 +94,7 @@ int message_delay_timeout(struct thread *thread)
 		exit(1);
 	}
 
-	printf("[Got message 3 seconds ago]\n");
+	printf("Got message 3 seconds ago : %s\n",message);
 
 	return 0;
 }
@@ -152,7 +155,7 @@ process_data_from_stdin (struct thread *thread)
 			/* input len is INPUT_BUFF_MAX - 1 */
 			if (buf[read_len - 1] == '\n') 					{
 				buf[read_len - 1] = '\0';
-				printf ("%s\n", buf);
+				printf ("%s", buf);
 				break;
 
 			}
@@ -195,10 +198,42 @@ process_data_from_stdin (struct thread *thread)
  * @return success on 0
  */
 	int
+process_data_to_udp_sock (struct thread *thread)
+{
+	int send_len;
+	socklen_t addr_len;
+
+	if (thread == NULL)
+	{
+		errno = EINVAL;
+		perror ("process_data_to_dup_sock");
+		exit (1);
+	}
+	addr_len = sizeof(their_addr);
+	/* send to udp socket */
+	send_len = sendto (thread->u.fd, message, strlen(message), 0,
+			(struct sockaddr*)&their_addr, addr_len);
+
+	if (send_len == -1)
+	{
+		perror ("send error process_data_to_udp_sock");
+		exit (1);
+	}
+	printf("reply message to client: %s\n",message);
+	if (thread_add_read (&my_mux, 
+				process_data_to_udp_sock, NULL, thread->u.fd) == NULL)
+	{
+		perror ("process_data_from_to_sock(thread_add_write)");
+		exit (1);
+	}
+
+	return 0;
+}
+
+	int
 process_data_from_udp_sock (struct thread *thread)
 {
 	int recv_len;
-	struct sockaddr_in their_addr;
 	char recv_buf[RECV_BUFF_MAX];
 	socklen_t addr_len;
 
@@ -211,27 +246,31 @@ process_data_from_udp_sock (struct thread *thread)
 	addr_len = sizeof(their_addr);
 	/* recv from udp socket */
 	recv_len = recvfrom (thread->u.fd, recv_buf, INPUT_BUFF_MAX - 1, 0,
-			(struct sockaddr *)&their_addr, &addr_len);
+			(struct sockaddr*)&their_addr, &addr_len);
 
 	if (recv_len == -1)
 	{
 		perror ("process_data_from_udp_sock");
 		exit (1);
 	}
-
+	recv_buf[recv_len-1]='\0';
 	printf ("[form UDP socket] : %s\n", recv_buf);
+
+	strcpy(message,recv_buf);
 
 	schedule_message_delay(thread);
 	/* create thread */
 	if (thread_add_read (&my_mux, 
 				process_data_from_udp_sock, NULL, thread->u.fd) == NULL)
 	{
+		printf("recvfrom\n");
 		perror ("process_data_from_udp_sock(thread_add_read)");
 		exit (1);
 	}
 
 	return 0;
 }
+
 
 /**
  * create my_socket
@@ -280,6 +319,15 @@ create_socket (struct my_sock_info *my_sock)
 		perror ("cread_socket(thread_add_read)");
 		exit (1);
 	}
+
+	if (thread_add_read (&my_mux, 
+				process_data_to_udp_sock, NULL, sockfd) == NULL)
+	{
+		perror ("cread_socket(thread_add_read)");
+		exit (1);
+	}
+
+	/* create thread */
 }
 
 /**
